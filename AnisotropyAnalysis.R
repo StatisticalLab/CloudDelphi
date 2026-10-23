@@ -1,3 +1,9 @@
+# ------------------------------------------------------------------------------
+# Supplementary code for: Cruz-Ramirez, M. Cloud Delphi framework under
+# asymmetric uncertainty. Croatian Operational Research Review (CRORR).
+# DOI: 10.17535/crorr.2027.0013  |  Contact: mcruz65@uan.edu.co
+# Requirements: base R (>= 4.0); no additional packages. See README.md.
+# ------------------------------------------------------------------------------
 # ==============================================================================
 # Re-analysis of Table 1 from Cruz & Cables (2022), Investigación Operacional 43(2)
 # "Un estudio comparado de dos enfoques no deterministas en el Delphi de pronóstico"
@@ -103,7 +109,7 @@ cat(sprintf("Round 2: %d/56 experts exactly symmetric (r = 0.5)\n",
             sum(d$r2 == 0.5)))
 
 # ------------------------------------------------------------------
-# 3. Individual anisotropy index (analogous to A_i, Eq. 6 in the new paper)
+# 3. Individual anisotropy index (analogous to A_i, Eq. 9 in the new paper)
 #    EnL = Ex - min  (left segment)
 #    EnR = max - Ex  (right segment)
 #    A   = |EnL - EnR| / (EnL + EnR)   in [0, 1)

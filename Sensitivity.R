@@ -1,3 +1,9 @@
+# ------------------------------------------------------------------------------
+# Supplementary code for: Cruz-Ramirez, M. Cloud Delphi framework under
+# asymmetric uncertainty. Croatian Operational Research Review (CRORR).
+# DOI: 10.17535/crorr.2027.0013  |  Contact: mcruz65@uan.edu.co
+# Requirements: base R (>= 4.0); no additional packages. See README.md.
+# ------------------------------------------------------------------------------
 ## ==========================================================================
 ## Sensitivity Analysis of Model Design Constants
 ## Asymmetric Cloud Delphi (Split-Entropy)
@@ -14,46 +20,42 @@
 ## the real panel (N = 7, 3 rounds), first using the article's nominal values
 ## and then perturbing each constant by +/- a percentage, one at a time.
 ##
-## YOU ONLY NEED TO EDIT SECTION "1. RAW PANEL DATA" with the actual values of
+## Section "1. RAW PANEL DATA" holds the actual values of
 ## x_min, x_max, Ex, and C for each expert in each round (the same ones used
 ## to construct Table 1 of the article).
 ## ==========================================================================
 
 ## --------------------------------------------------------------------------
-## 1. RAW PANEL DATA  <-- REPLACE THIS WITH YOUR ACTUAL DATA
+## 1. RAW PANEL DATA (actual panel, N = 7, 3 rounds)
 ## --------------------------------------------------------------------------
 ## Each round is a list containing 4 vectors of length N (one per expert):
-## xmin, xmax, Ex, C (C in {0.0, 0.1, ..., 1.0})
+## xmin, xmax, Ex, C (C = confidence rating on a 0-100 scale divided by 100)
 
 N <- 7
 
 rounds_raw <- list(
   round1 = list(
-    xmin = c(10, 30, 20,  5, 60, 10, 15),
-    xmax = c(30, 70, 50, 20, 95, 60, 45),
+    xmin = c(15, 10, 30, 10, 20, 15, 25),
+    xmax = c(75, 60, 90, 50, 85, 70, 80),
     Ex   = c(20, 52, 35, 15, 80, 22, 30),
-    C    = c(0.6, 0.1, 0.5, 0.5, 0.4, 0.0, 0.5)   # <-- PLACEHOLDER, review
+    C    = c(0.85, 0.05, 0.75, 0.60, 0.85, 0.02, 0.70)
   ),
   round2 = list(
-    xmin = c(24, 30, 27, 25, 22, 32, 26),
-    xmax = c(35, 55, 42, 39, 47, 56, 40),
+    xmin = c(25, 35, 30, 28, 32, 40, 28),
+    xmax = c(55, 75, 60, 50, 65, 75, 55),
     Ex   = c(30, 42, 34, 32, 36, 45, 33),
-    C    = c(0.7, 0.5, 0.7, 0.7, 0.6, 0.6, 0.65)  # <-- PLACEHOLDER, review
+    C    = c(0.95, 0.80, 0.92, 0.88, 0.90, 0.85, 0.91)
   ),
   round3 = list(
-    xmin = c(32, 35, 34, 33, 35, 36, 32),
-    xmax = c(40, 45, 42, 41, 43, 46, 40),
+    xmin = c(30, 34, 32, 31, 33, 35, 30),
+    xmax = c(42, 46, 44, 43, 45, 47, 42),
     Ex   = c(36, 40, 38, 37, 39, 41, 36),
-    C    = c(0.85, 0.8, 0.85, 0.88, 0.85, 0.78, 0.86)  # <-- PLACEHOLDER, review
+    C    = c(0.98, 0.95, 0.96, 0.94, 0.97, 0.92, 0.95)
   )
 )
 
-## IMPORTANT: The values above are placeholders to ensure the script runs
-## without errors. Replace them with the actual x_min, x_max, Ex, and C
-## values from your instrument (Figure 1) for each of the 7 experts across
-## all rounds. Ex_i, En_L,i, and En_R,i from the published Table 1 can be used
-## to verify that inputting the correct x_min/x_max/C reproduces the exact
-## En_L, En_R values of Table 1 via your split_entropy() function.
+## Actual panel data (same as Round1_Data, Round2_Data and Round3_Data in
+## CloudDelphi.R); they reproduce Table 1 of the article exactly.
 
 ## --------------------------------------------------------------------------
 ## 2. MODEL FUNCTIONS (Equations 6-16 of the article)
@@ -116,8 +118,7 @@ run_model <- function(rounds_raw, eps = 1e-2, xi = 1e-3, omega_den = 18,
     EnLs <- (Ex_s - min(d$Ex - 3 * se$EnL)) / 3
     EnRs <- (max(d$Ex + 3 * se$EnR) - Ex_s) / 3
     EnAvg_s <- (EnLs + EnRs) / 2
-    EnAvg_ind <- mean(se$EnL + se$EnR) / 2        # = (1/(2N)) * sum(EnL + EnR), Eq. of I_s^(r)
-    Is <- He_s / EnAvg_ind
+    Is <- He_s / EnAvg_s                           # I_s^(r) = He_s / mean synthetic entropy (as in the article and CloudDelphi.R)
 
     UpsE <- 0; UpsU <- 0; UpsR <- 0
     if (r > 1) {
@@ -179,7 +180,7 @@ for (cname in names(sensitivity_grid)) {
 
     dEx_pct  <- 100 * (final$Ex_s - base_final$Ex_s) / base_final$Ex_s
     dHe_pct  <- 100 * (final$He_s - base_final$He_s) / base_final$He_s
-    same_stop <- res$stop_round == baseline$stop_round
+    same_stop <- isTRUE(res$stop_round == baseline$stop_round)  # NA stop (no halt within the 3 rounds) counts as a change
 
     results <- rbind(results, data.frame(
       constant = cname,

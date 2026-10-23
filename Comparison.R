@@ -1,3 +1,9 @@
+# ------------------------------------------------------------------------------
+# Supplementary code for: Cruz-Ramirez, M. Cloud Delphi framework under
+# asymmetric uncertainty. Croatian Operational Research Review (CRORR).
+# DOI: 10.17535/crorr.2027.0013  |  Contact: mcruz65@uan.edu.co
+# Requirements: base R (>= 4.0); no additional packages. See README.md.
+# ------------------------------------------------------------------------------
 # ==============================================================================
 # COMPARATIVE SCRIPT: ASYMMETRIC CLOUD DELPHI VS. CLASSIC SYMMETRIC BASELINE
 # ==============================================================================

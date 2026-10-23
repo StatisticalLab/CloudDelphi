@@ -1,3 +1,9 @@
+# ------------------------------------------------------------------------------
+# Supplementary code for: Cruz-Ramirez, M. Cloud Delphi framework under
+# asymmetric uncertainty. Croatian Operational Research Review (CRORR).
+# DOI: 10.17535/crorr.2027.0013  |  Contact: mcruz65@uan.edu.co
+# Requirements: base R (>= 4.0); no additional packages. See README.md.
+# ------------------------------------------------------------------------------
 # ==============================================================================
 # CLOUD DELPHI METHODOLOGY - CORE COMPUTATIONAL ENGINE
 # ==============================================================================
@@ -87,7 +93,7 @@ CloudDelphi_Core <- function(CurrentData, ForegoingData = NULL, ForegoingEntropy
   DeltaEntropyIndex <- numeric(Experts + 1)
   
   if (!is.null(ForegoingEntropy)) {
-    DeltaEntropyIndex[1:Experts] <- abs(ForegoingEntropy[1:Experts] - En_MeanCurrent) / max(ForegoingEntropy[1:Experts], eps)
+    DeltaEntropyIndex[1:Experts] <- abs(ForegoingEntropy[1:Experts] - En_MeanCurrent) / pmax(ForegoingEntropy[1:Experts], eps)  # element-wise: each expert's own previous entropy
     DeltaEntropyIndex[Experts + 1] <- abs(ForegoingEntropy[Experts + 1] - ((En_Ls + En_Rs)/2)) / max(ForegoingEntropy[Experts + 1], eps)
   }
   
@@ -157,10 +163,13 @@ CloudDelphi_Evolution <- function(RoundsList, OutputDir = NULL, FilePrefix = "Cl
       DrawCloudSpace <- function(Ex, En_L, En_R, He, Color, Size, N, IsSynthetic = FALSE) {
         X_i <- numeric(N); Mu_i <- numeric(N)
         for (j in 1:N) {
-          En_Side <- ifelse(runif(1) > 0.5, En_R, En_L)
+          # Split double randomization: the side is chosen with probability
+          # proportional to its entropy, and the drop is placed on that side
+          Left_Side <- runif(1) < En_L / (En_L + En_R)
+          En_Side <- ifelse(Left_Side, En_L, En_R)
           En_Rand <- rnorm(1, mean = En_Side, sd = He)
           if(En_Rand <= 0) En_Rand <- xi_param  # Protected utilizing the structural parameters
-          X_val <- rnorm(1, mean = Ex, sd = En_Rand)
+          X_val <- Ex + ifelse(Left_Side, -1, 1) * abs(rnorm(1, mean = 0, sd = En_Rand))
           X_i[j] <- X_val
           Mu_i[j] <- exp(-((X_val - Ex)^2) / (2 * En_Rand^2))
         }
@@ -225,5 +234,7 @@ Round2_Data <- c(25, 55, 30, 0.95, 35, 75, 42, 0.80, 30, 60, 34, 0.92, 28, 50, 3
 Round3_Data <- c(30, 42, 36, 0.98, 34, 46, 40, 0.95, 32, 44, 38, 0.96, 31, 43, 37, 0.94, 33, 45, 39, 0.97, 35, 47, 41, 0.92, 30, 42, 36, 0.95)
 
 DelphiStudyRounds <- list(Round_1 = Round1_Data, Round_2 = Round2_Data, Round_3 = Round3_Data)
+
+set.seed(2026)  # fixed seed: the random cloud drops (Figure 2) are reproducible
 
 Delphi_Outputs <- CloudDelphi_Evolution(RoundsList = DelphiStudyRounds)
